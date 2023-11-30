@@ -19,6 +19,7 @@ public class BleTest : MonoBehaviour
     string deviceId = null;  
     IDictionary<string, string> discoveredDevices = new Dictionary<string, string>();
     int devicesCount = 0;
+    Quaternion quaternion = new Quaternion(0, 0, 0, 0);
 
     // BLE Threads 
     Thread scanningThread, connectionThread, readingThread;
@@ -138,13 +139,22 @@ public class BleTest : MonoBehaviour
     private void ReadBleData(object obj)
     {
         byte[] packageReceived = BLE.ReadBytes();
-        remoteAngle = System.Text.Encoding.ASCII.GetString(packageReceived).TrimEnd('\0');
-        // Convert little Endian.
-        // In this example we're interested about an angle
-        // value on the first field of our package.
-        //remoteAngle = packageReceived;
-        Debug.Log("Angle: " + remoteAngle);
-        //Thread.Sleep(50);
+        string string_in = System.Text.Encoding.ASCII.GetString(packageReceived);
+        string[] string_array = string_in.Split(",");   
+        // float[] q = new float[4];
+        // int i = 0;
+        // foreach(var item in string_array)
+        // {
+        //     Debug.Log(item.ToString());
+        //     q[i] = float.Parse(item.ToString());
+        //     i = i+1;
+        // }
+
+        quaternion.x = float.Parse(string_array[0].ToString());
+        quaternion.y = float.Parse(string_array[1].ToString());
+        quaternion.z = float.Parse(string_array[2].ToString());
+        quaternion.w = float.Parse(string_array[3].ToString());
+        Thread.Sleep(15);
     }
 
     void UpdateGuiText(string action)
@@ -152,11 +162,13 @@ public class BleTest : MonoBehaviour
         switch(action) {
             case "scan":
                 TextDiscoveredDevices.text = "";
-                foreach (KeyValuePair<string, string> entry in discoveredDevices)
-                {
-                    TextDiscoveredDevices.text += "DeviceID: " + entry.Key + "\nDeviceName: " + entry.Value + "\n\n";
-                    Debug.Log("Added device: " + entry.Key);
-                }
+                // IDictionary<string, string> tempDiscoveredDevices = new Dictionary<string, string>();
+                // tempDiscoveredDevices = discoveredDevices;
+                // foreach (KeyValuePair<string, string> entry in tempDiscoveredDevices)
+                // {
+                //     TextDiscoveredDevices.text += "DeviceID: " + entry.Key + "\nDeviceName: " + entry.Value + "\n\n";
+                //     Debug.Log("Added device: " + entry.Key);
+                // }
                 break;
             case "connected":
                 ButtonEstablishConnection.enabled = false;
@@ -183,9 +195,13 @@ public class BleTest : MonoBehaviour
         Debug.Log("BLE.ScanDevices() started.");
         scan.Found = (_deviceId, deviceName) =>
         {
-            Debug.Log("found device with name: " + deviceName);
-            discoveredDevices.Add(_deviceId, deviceName);
+            if (!discoveredDevices.ContainsKey(_deviceId))
+            {
+                Debug.Log("found device with name: " + deviceName);
+                discoveredDevices.TryAdd(_deviceId, deviceName);
+                // Thread.Sleep(50);
 
+            }
             if (deviceId == null && deviceName == targetDeviceName)
                 deviceId = _deviceId;
         };
@@ -246,5 +262,10 @@ public class BleTest : MonoBehaviour
             pos += 8;
         }
         return result;
+    }
+
+    public Quaternion get_quaternion()
+    {
+        return quaternion;
     }
 }
