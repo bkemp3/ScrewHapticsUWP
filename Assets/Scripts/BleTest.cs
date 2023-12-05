@@ -21,6 +21,8 @@ public class BleTest : MonoBehaviour
     int devicesCount = 0;
     Quaternion quaternion = new Quaternion(0, 0, 0, 0);
 
+    float revolutions = 0.0f;
+
     // BLE Threads 
     Thread scanningThread, connectionThread, readingThread;
 
@@ -140,7 +142,8 @@ public class BleTest : MonoBehaviour
     {
         byte[] packageReceived = BLE.ReadBytes();
         string string_in = System.Text.Encoding.ASCII.GetString(packageReceived);
-        string[] string_array = string_in.Split(",");   
+        string[] string_array = string_in.Split(",");  
+        Debug.Log("Received: " + string_in); 
         // float[] q = new float[4];
         // int i = 0;
         // foreach(var item in string_array)
@@ -154,6 +157,7 @@ public class BleTest : MonoBehaviour
         quaternion.y = float.Parse(string_array[1].ToString());
         quaternion.z = float.Parse(string_array[2].ToString());
         quaternion.w = float.Parse(string_array[3].ToString());
+        // revolutions = float.Parse(string_array[4].ToString());
         Thread.Sleep(15);
     }
 
@@ -267,5 +271,10 @@ public class BleTest : MonoBehaviour
     public Quaternion get_quaternion()
     {
         return quaternion;
+    }
+
+    public float get_revolutions()
+    {
+        return revolutions;
     }
 }
